@@ -1,9 +1,7 @@
-// controllers/libraryController.js
+
 import pool from "../db.js";
 
 class LibraryController {
-
-
 
 
   // Create a new library
@@ -50,8 +48,60 @@ class LibraryController {
     const result = await pool.query(query, [userId]);
     return result.rows;
   }
-  
 
+
+  
+  //get a specific library content by Id
+  async getLibraryContent (id) {
+    try {
+      const query = `
+        SELECT * FROM content_items 
+        WHERE id = $1
+      `;
+      
+      const result = await pool.query(query, [id]);
+      
+      if (result.rowCount === 0) {
+        return null;
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error getting content item:', error);
+      throw error;
+    }
+  }
+
+
+
+
+
+  //Update a specific LibraryContent
+
+  async updateLibraryContent (id, title, content, metadata) {
+
+    const query = `
+    UPDATE content_items
+    SET
+      title = COALESCE($1, title),
+      content = COALESCE($2, content),
+      metadata = COALESCE($3, metadata),
+      updated_at = NOW()
+    WHERE id = $4
+    RETURNING *;  
+    `
+    const values = [
+
+      title ||  null,
+      content || null,
+      metadata || null,
+      id
+    ]
+
+    const result = await pool.query(query, values);
+    return result.rowCount > 0? result.rows[0] : null;
+
+  }
 
 
   // Get direct children of a library (for hierarchical display)
@@ -68,6 +118,8 @@ class LibraryController {
     const result = await pool.query(query, [parentId, userId]);
     return result.rows;
   }
+
+
 
 
   

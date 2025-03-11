@@ -5,10 +5,11 @@ import auth from '../middlewares/auth.middleware.js';
 
 const libraryRoutes = express.Router(); 
 
-// Get all libraries for current user
+//get libraries for the current User.
 libraryRoutes.get('/libraries', auth, async (req, res) => {
   try {
-    const libraries = await libraryController.getAllForUser(req.user.id);
+    const userId = req.query.userId;
+    const libraries = await libraryController.getAllForUser(userId);
     res.json(libraries);
   } catch (err) {
     console.error(err);
@@ -16,12 +17,51 @@ libraryRoutes.get('/libraries', auth, async (req, res) => {
   }
 });
 
+//get a specific library content for editing.
+
+libraryRoutes.get('/library/content/:id', auth, async(req, res) => {
+try {
+  const  contentId = req.params.id
+  const item = await libraryController.getLibraryContent(contentId);
+  if (!item) {
+    return res.status(404).json({ message: 'Library not found' });
+  }
+  res.json(item);
+  
+} catch (er) {
+  console.log(er)
+  res.status(500).json({ message: 'Server error' });
+  
+}
+
+})
+
+//edit a specific library item  
+libraryRoutes.put('/library/content/:id', auth, async(req, res) => {
+
+try {
+
+  const contentId = req.params.id
+ const {title, content , metadata} = req.body;
+  if(!title && !content && !metadata) return res.status(400).json({message: "atleast one field (title, metadata, or content) is required"});
+
+  const updatedContent =  await libraryController.updateLibraryContent(contentId, title, content, metadata)
+  if(!updatedContent) return res.status(404).json({message: "content item not found or update fail"})
+  res.json(updatedContent);
+  
+} catch (er) {
+  console.log(er);
+  res.status(500).json({message: "server Error"})
+  
+}
+
+})
 
 
 // Create a new library
-libraryRoutes.post('/', auth, async (req, res) => {
+libraryRoutes.post('/library', auth, async (req, res) => {
   try {
-    const { title, description, icon, color, parentId, isPublic, aiGenerated, aiPrompt, aiSettings } = req.body;
+    const { title, description, icon,createdBy, color, parentId, isPublic, aiGenerated, aiPrompt, aiSettings } = req.body;
     
     if (!title) {
       return res.status(400).json({ message: 'Title is required' });
@@ -32,7 +72,7 @@ libraryRoutes.post('/', auth, async (req, res) => {
       description,
       icon,
       color,
-      createdBy: req.user.id,
+      createdBy,
       parentId,
       isPublic,
       aiGenerated,
@@ -48,7 +88,7 @@ libraryRoutes.post('/', auth, async (req, res) => {
 });
 
 // Get a specific library
-libraryRoutes.get('/:id', auth, async (req, res) => {
+libraryRoutes.get('/libraries/:id', auth, async (req, res) => {
   try {
     const library = await libraryController.getById(req.params.id, req.user.id);
     
