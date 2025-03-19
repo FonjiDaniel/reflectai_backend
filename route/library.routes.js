@@ -8,7 +8,7 @@ const libraryRoutes = express.Router();
 //get libraries for the current User.
 libraryRoutes.get('/libraries', auth, async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const userId = req.user.userId;
     const libraries = await libraryController.getAllForUser(userId);
     res.json(libraries);
   } catch (err) {
@@ -150,20 +150,24 @@ libraryRoutes.put('/:id', auth, async (req, res) => {
 });
 
 // Delete a library
-libraryRoutes.delete('/:id', auth, async (req, res) => {
+libraryRoutes.delete('/library/delete/:id', auth, async (req, res) => {
   try {
-    const library = await libraryController.getById(req.params.id, req.user.id);
+    const library = await libraryController.getById(req.params.id, req.user.userId)
+    console.log("current user is " , req.user.userId)
     
     if (!library) {
       return res.status(404).json({ message: 'Library not found' });
     }
     
-    if (library.created_by !== req.user.id && library.permission !== 'admin') {
+    if (library.created_by !== req.user.userId ) {
       return res.status(403).json({ message: 'Not authorized to delete this library' });
+
     }
+
+
     
     await libraryController.delete(req.params.id);
-    res.json({ message: 'Library deleted successfully' });
+    res.json(library);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -177,6 +181,7 @@ libraryRoutes.post('/:id/tags', auth, async (req, res) => {
     
     if (!library || (library.created_by !== req.user.id && library.permission !== 'write' && library.permission !== 'admin')) {
       return res.status(403).json({ message: 'Not authorized' });
+
     }
     
     const { name, color } = req.body;
@@ -190,6 +195,7 @@ libraryRoutes.post('/:id/tags', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 
 libraryRoutes.post('/:id/collaborators', auth, async (req, res) => {
@@ -209,6 +215,7 @@ libraryRoutes.post('/:id/collaborators', auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+
   }
 });
 

@@ -41,6 +41,8 @@ const auth = async (req, res, next) => {
       
      
       req.user = decoded;
+      console.log("auth request user is ", req.user);
+      
       
       next();
     } catch (error) {

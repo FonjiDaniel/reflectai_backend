@@ -42,7 +42,7 @@ class LibraryController {
       LEFT JOIN library_collaborators lc ON l.id = lc.library_id
       WHERE l.created_by = $1
       OR lc.user_id = $1
-      ORDER BY l.display_order, l.title
+      ORDER BY l.updated_at DESC
     `;
     
     const result = await pool.query(query, [userId]);
@@ -50,6 +50,7 @@ class LibraryController {
   }
 
 
+  
   
   //get a specific library content by Id
   async getLibraryContent (id) {
@@ -126,49 +127,31 @@ class LibraryController {
   // Get a single library by ID
   async getById(id, userId) {
     const query = `
-      SELECT l.*, 
-        (l.created_by = $2) as is_owner,
-        COALESCE(lc.permission, 'read') as permission,
-        (SELECT COUNT(*) FROM content_items WHERE library_id = $1) as content_count
-      FROM libraries l
-      LEFT JOIN library_collaborators lc ON l.id = lc.library_id AND lc.user_id = $2
-      WHERE l.id = $1
-      AND (l.created_by = $2 OR lc.user_id = $2 OR l.is_public = true)
+      SELECT *, (created_by = $2) AS is_owner
+      FROM libraries
+      WHERE id = $1
     `;
-    
+
     const result = await pool.query(query, [id, userId]);
+    console.log(result);
     return result.rows[0] || null;
-  }
-  
+}
+
+
 
 
   // Update a library
-  async update(id, { title, description, icon, color, lastEditedBy, parentId, displayOrder, isPublic }) {
+  async updateLibrary(id,  title,) {
     const query = `
       UPDATE libraries
       SET 
-        title = COALESCE($1, title),
-        description = COALESCE($2, description),
-        icon = COALESCE($3, icon),
-        color = COALESCE($4, color),
-        last_edited_by = $5,
-        parent_id = COALESCE($6, parent_id),
-        display_order = COALESCE($7, display_order),
-        is_public = COALESCE($8, is_public),
-        updated_at = NOW()
-      WHERE id = $9
-      RETURNING *
+        title = COALESCE($1, title)
+      WHERE id = $2
+      RETURNING * 
     `;
     
     const values = [
       title, 
-      description, 
-      icon, 
-      color, 
-      lastEditedBy, 
-      parentId, 
-      displayOrder, 
-      isPublic,
       id
     ];
     
@@ -178,9 +161,16 @@ class LibraryController {
   
 
   async delete(id) {
-    const query = 'DELETE FROM libraries WHERE id = $1 RETURNING *';
-    const result = await pool.query(query, [id]);
-    return result.rows[0];
+    try {  
+      
+      const query = 'DELETE FROM libraries WHERE id = $1 RETURNING *';
+      const result = await pool.query(query, [id]);
+      return result.rows[0];
+      
+    } catch (err) {
+      console.log(err);
+      
+    }
   }
   
  
@@ -250,6 +240,7 @@ class LibraryController {
     return result.rows;
   }
 }
+
 
 
 export default new LibraryController();
