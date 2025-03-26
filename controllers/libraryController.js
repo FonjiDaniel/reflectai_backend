@@ -79,7 +79,8 @@ class LibraryController {
 
   //Update a specific LibraryContent
 
-  async updateLibraryContent (id, title, content, metadata) {
+  async updateLibraryContent (id, title, content, metadata, wordCount) {
+    
 
     const query = `
     UPDATE content_items
@@ -87,8 +88,9 @@ class LibraryController {
       title = COALESCE($1, title),
       content = COALESCE($2, content),
       metadata = COALESCE($3, metadata),
+      word_count = COALESCE($4, word_count),
       updated_at = NOW()
-    WHERE id = $4
+    WHERE id = $5
     RETURNING *;  
     `
     const values = [
@@ -96,6 +98,7 @@ class LibraryController {
       title ||  null,
       content || null,
       metadata || null,
+      wordCount || 0 ,
       id
     ]
 
@@ -239,6 +242,25 @@ class LibraryController {
     const result = await pool.query(query, [libraryId]);
     return result.rows;
   }
+
+  //TODO
+  //create an endpoint that will be used to get users writing stats (daily word counts);
+
+
+  //function to get daily_word_counts data for a specific user
+
+async getWritingStats (userId) {
+  const query = 
+ `SELECT * FROM daily_word_counts 
+  WHERE user_id = $1 
+  ORDER BY entry_date ASC`
+  const result = await pool.query(query,[userId])
+  return result.rows;
+
+
+
+}
+
 }
 
 

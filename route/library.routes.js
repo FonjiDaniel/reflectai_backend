@@ -216,7 +216,27 @@ libraryRoutes.post('/:id/collaborators', auth, async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
 
+
+
   }
 });
+
+
+
+libraryRoutes.get('/stats', auth, async (req, res) => {
+
+  try {
+    
+
+    const userId = req.user.userId
+    const stats = await libraryController.getWritingStats(userId)
+    res.json(stats);
+  } catch (err) {
+    console.error(err);
+    
+  }
+ 
+})
+
 
 export default libraryRoutes;

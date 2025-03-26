@@ -29,6 +29,8 @@ app.use('/api/v1/', libraryRoutes);
 
 io.use(((socket, next) => {
 
+
+  // Verify the connected client
   if(socket.handshake.auth.token){
     jwt.verify(socket.handshake.auth.token, process.env.JWT_SECRET, (err, decoded)  => {
       if (err) return next(new Error(" authentication failed"));
@@ -49,20 +51,24 @@ io.on("connection", (socket) => {
         data.id,
         data.title,
         data.content,
-        data.metadata
-      );
+        data.metadata,
+        data.wordCount
+      )
       const updatedLibrary = await libraryController.updateLibrary(data.id, data.title);
 
       if (updatedContent && updatedLibrary) {
         console.log("Database updated successfully:", updatedContent, updatedLibrary);
 
-        // Broadcast the updated content to all connected clients
+        
         io.emit("libraryUpdated", updatedContent);
       } else {
         console.error("Update failed: content item not found");
       }
     } catch (error) {
       console.error("Error updating database:", error);
+
+
+
     }
   });
 
@@ -70,6 +76,7 @@ io.on("connection", (socket) => {
     console.log("A user disconnected:", socket.id);
   });
 });
+
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

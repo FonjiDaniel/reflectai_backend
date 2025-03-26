@@ -41,8 +41,6 @@ const auth = async (req, res, next) => {
       
      
       req.user = decoded;
-      console.log("auth request user is ", req.user);
-      
       
       next();
     } catch (error) {
@@ -62,7 +60,7 @@ const auth = async (req, res, next) => {
     console.error('Authentication error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error during authentication.'
+      message: 'Internal server error occured during authentication.'
     });
   }
 };
