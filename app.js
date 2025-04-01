@@ -1,14 +1,14 @@
 import express from "express";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import http from "http";
 import { Server } from "socket.io";
 import dotenv from "dotenv";
-import process from "node:process"
+import process from "node:process";
 import cors from "cors";
-import  libraryController from "./controllers/libraryController.js";
+import libraryController from "./controllers/libraryController.js";
 import authRoute from "./route/auth.routes.js";
-import libraryRoutes from "./route/library.routes.js"
-
+import libraryRoutes from "./route/library.routes.js";
+import streakRoute from "./route/streak.routes.js";
 
 dotenv.config();
 
@@ -17,28 +17,31 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use(express.json());
 app.use(cors());
-app.use('/api/v1/', authRoute);
-app.use('/api/v1/', libraryRoutes);
+app.use("/api/v1/", authRoute);
+app.use("/api/v1/", libraryRoutes);
+app.use("/api/v1/reset-streaks", streakRoute);
 
-
-io.use(((socket, next) => {
-
-
-  // Verify the connected client
-  if(socket.handshake.auth.token){
-    jwt.verify(socket.handshake.auth.token, process.env.JWT_SECRET, (err, decoded)  => {
-      if (err) return next(new Error(" authentication failed"));
-      socket.user = decoded;
-      next()
-    })
+io.use((socket, next) => {
+  // Verify the connected client using jwt token
+  // The token is expected to be passed in the handshake query parameters from the the client
+  if (socket.handshake.auth.token) {
+    jwt.verify(
+      socket.handshake.auth.token,
+      process.env.JWT_SECRET,
+      (err, decoded) => {
+        if (err) return next(new Error(" authentication failed"));
+        socket.user = decoded;
+        next();
+      },
+    );
   }
-}))
+});
 
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
@@ -52,23 +55,26 @@ io.on("connection", (socket) => {
         data.title,
         data.content,
         data.metadata,
-        data.wordCount
-      )
-      const updatedLibrary = await libraryController.updateLibrary(data.id, data.title);
+        data.wordCount,
+      );
+      const updatedLibrary = await libraryController.updateLibrary(
+        data.id,
+        data.title,
+      );
 
       if (updatedContent && updatedLibrary) {
-        console.log("Database updated successfully:", updatedContent, updatedLibrary);
+        console.log(
+          "Database updated successfully:",
+          updatedContent,
+          updatedLibrary,
+        );
 
-        
         io.emit("libraryUpdated", updatedContent);
       } else {
         console.error("Update failed: content item not found");
       }
     } catch (error) {
       console.error("Error updating database:", error);
-
-
-
     }
   });
 
@@ -76,7 +82,6 @@ io.on("connection", (socket) => {
     console.log("A user disconnected:", socket.id);
   });
 });
-
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
