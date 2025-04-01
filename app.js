@@ -27,6 +27,10 @@ app.use("/api/v1/", authRoute);
 app.use("/api/v1/", libraryRoutes);
 app.use("/api/v1/reset-streaks", streakRoute);
 
+app.get("/", (req, res) => {
+  res.send("Server is running");
+});
+
 io.use((socket, next) => {
   // Verify the connected client using jwt token
   // The token is expected to be passed in the handshake query parameters from the the client
