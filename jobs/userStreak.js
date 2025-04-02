@@ -25,6 +25,5 @@ schedule.scheduleJob('59 23 * * *', async function() {
     });
   } catch (error) {
     console.error("Error resetting streaks:", error);
-    res.status(500).json({ error: "Internal Server Error" });
   }
 });
