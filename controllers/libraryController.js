@@ -1,4 +1,6 @@
-import pool from "../db.js";
+'use strict';
+
+const pool = require("../db.js");
 
 class LibraryController {
   // Create a new library
@@ -76,7 +78,6 @@ class LibraryController {
   }
 
   //Update a specific LibraryContent
-
   async updateLibraryContent(id, title, content, metadata, wordCount) {
     const query = `
     UPDATE content_items
@@ -155,11 +156,6 @@ class LibraryController {
     }
   }
 
-  //TODO
-  //create an endpoint that will be used to get users writing stats (daily word counts);
-
-  //function to get daily_word_counts data for a specific user
-
   async getWritingStats(userId) {
     const query = `SELECT * FROM daily_word_counts 
   WHERE user_id = $1 
@@ -171,9 +167,12 @@ class LibraryController {
   async getUserStreak(userId) {
     const query = `SELECT current_streak, longest_streak FROM user_streaks WHERE user_id = $1 `;
 
+
     const result = await pool.query(query, [userId]);
+
+    console.log("the current streak is : " , result);
     return result.rows;
   }
 }
 
-export default new LibraryController();
+module.exports = new LibraryController();

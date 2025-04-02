@@ -1,14 +1,13 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import http from "http";
-import { Server } from "socket.io";
-import dotenv from "dotenv";
-import process from "node:process";
-import cors from "cors";
-import libraryController from "./controllers/libraryController.js";
-import authRoute from "./route/auth.routes.js";
-import libraryRoutes from "./route/library.routes.js";
-import streakRoute from "./route/streak.routes.js";
+const express = require("express");
+const jwt = require("jsonwebtoken");
+const http = require("http");
+const { Server } = require("socket.io");
+const dotenv = require("dotenv");
+const process = require("node:process");
+const cors = require("cors");
+const libraryController = require("./controllers/libraryController.js");
+const authRoute = require("./route/auth.routes.js");
+const libraryRoutes = require("./route/library.routes.js");
 
 dotenv.config();
 
@@ -25,24 +24,22 @@ app.use(express.json());
 app.use(cors());
 app.use("/api/v1/", authRoute);
 app.use("/api/v1/", libraryRoutes);
-app.use("/api/v1/reset-streaks", streakRoute);
 
 app.get("/", (req, res) => {
-  res.send("Server is running");
+  res.send("Server is running on port ${process.env.PORT");
 });
 
 io.use((socket, next) => {
   // Verify the connected client using jwt token
-  // The token is expected to be passed in the handshake query parameters from the the client
   if (socket.handshake.auth.token) {
     jwt.verify(
       socket.handshake.auth.token,
       process.env.JWT_SECRET,
       (err, decoded) => {
-        if (err) return next(new Error(" authentication failed"));
+        if (err) return next(new Error("authentication failed"));
         socket.user = decoded;
         next();
-      },
+      }
     );
   }
 });
@@ -59,18 +56,18 @@ io.on("connection", (socket) => {
         data.title,
         data.content,
         data.metadata,
-        data.wordCount,
+        data.wordCount
       );
       const updatedLibrary = await libraryController.updateLibrary(
         data.id,
-        data.title,
+        data.title
       );
 
       if (updatedContent && updatedLibrary) {
         console.log(
           "Database updated successfully:",
           updatedContent,
-          updatedLibrary,
+          updatedLibrary
         );
 
         io.emit("libraryUpdated", updatedContent);
@@ -87,5 +84,9 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (require.main === module) {
+  const PORT = process.env.PORT;
+  server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = {app, server, io}

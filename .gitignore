@@ -63,3 +63,12 @@ typings/
 
 # vscode configs
 .vscode
+
+# migrations directory
+/migrations/
+
+#deployment related file
+/database.json
+
+# test files
+/test/

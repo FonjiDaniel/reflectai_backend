@@ -1,10 +1,10 @@
-import express from "express";
-import libraryController from "../controllers/libraryController.js";
-import auth from "../middlewares/auth.middleware.js";
+const express = require("express");
+const libraryController = require("../controllers/libraryController.js");
+const auth = require("../middlewares/auth.middleware.js");
 
 const libraryRoutes = express.Router();
 
-//get libraries for the current User.
+// Get libraries for the current user
 libraryRoutes.get("/libraries", auth, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -16,8 +16,7 @@ libraryRoutes.get("/libraries", auth, async (req, res) => {
   }
 });
 
-//get a specific library content for editing.
-
+// Get a specific library content for editing
 libraryRoutes.get("/library/content/:id", auth, async (req, res) => {
   try {
     const contentId = req.params.id;
@@ -32,33 +31,31 @@ libraryRoutes.get("/library/content/:id", auth, async (req, res) => {
   }
 });
 
-//edit a specific library item
+// Edit a specific library item
 libraryRoutes.put("/library/content/:id", auth, async (req, res) => {
   try {
     const contentId = req.params.id;
     const { title, content, metadata } = req.body;
     if (!title && !content && !metadata)
-      return res
-        .status(400)
-        .json({
-          message:
-            "atleast one field (title, metadata, or content) is required",
-        });
+      return res.status(400).json({
+        message: "At least one field (title, metadata, or content) is required",
+      });
 
     const updatedContent = await libraryController.updateLibraryContent(
       contentId,
       title,
       content,
-      metadata,
+      metadata
     );
     if (!updatedContent)
       return res
         .status(404)
-        .json({ message: "content item not found or update fail" });
+        .json({ message: "Content item not found or update failed" });
+
     res.json(updatedContent);
   } catch (er) {
     console.log(er);
-    res.status(500).json({ message: "server Error" });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -185,9 +182,9 @@ libraryRoutes.delete("/library/delete/:id", auth, async (req, res) => {
   try {
     const library = await libraryController.getById(
       req.params.id,
-      req.user.userId,
+      req.user.userId
     );
-    console.log("current user is ", req.user.userId);
+    console.log("Current user is", req.user.userId);
 
     if (!library) {
       return res.status(404).json({ message: "Library not found" });
@@ -233,6 +230,7 @@ libraryRoutes.post("/:id/tags", auth, async (req, res) => {
   }
 });
 
+// Add collaborator to a library
 libraryRoutes.post("/:id/collaborators", auth, async (req, res) => {
   try {
     const library = await libraryController.getById(req.params.id, req.user.id);
@@ -247,7 +245,7 @@ libraryRoutes.post("/:id/collaborators", auth, async (req, res) => {
 
     await libraryController.addCollaborator(req.params.id, userId, permission);
     const collaborators = await libraryController.getCollaborators(
-      req.params.id,
+      req.params.id
     );
 
     res.json(collaborators);
@@ -257,6 +255,7 @@ libraryRoutes.post("/:id/collaborators", auth, async (req, res) => {
   }
 });
 
+// Get user writing stats
 libraryRoutes.get("/stats", auth, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -268,6 +267,7 @@ libraryRoutes.get("/stats", auth, async (req, res) => {
   }
 });
 
+// Get user streak
 libraryRoutes.get("/streak/:id", auth, async (req, res) => {
   try {
     const userId = req.params.id;
@@ -276,9 +276,8 @@ libraryRoutes.get("/streak/:id", auth, async (req, res) => {
     res.json(userStreak);
   } catch (err) {
     console.error(err);
-
     res.status(500).json({ message: "Server error" });
   }
 });
 
-export default libraryRoutes;
+module.exports = libraryRoutes;

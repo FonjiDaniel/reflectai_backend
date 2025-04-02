@@ -1,5 +1,7 @@
-import jwt from "jsonwebtoken";
-import process from "node:process";
+'use strict';
+
+const jwt = require("jsonwebtoken");
+const process = require("node:process");
 
 /**
  * Authentication middleware for Express that verifies JWT tokens
@@ -51,9 +53,9 @@ const auth = async (req, res, next) => {
     console.error("Authentication error:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error occured during authentication.",
+      message: "Internal server error occurred during authentication.",
     });
   }
 };
 
-export default auth;
+module.exports = auth;

@@ -1,8 +1,10 @@
-import jwt from "jsonwebtoken";
-import { findUserByEmail, createUser } from "../models/user.model.js";
-import process from "node:process";
+'use strict';
 
-export const signUpOrLogin = async (req, res, next) => {
+const jwt = require("jsonwebtoken");
+const { findUserByEmail, createUser } = require("../models/user.model");
+const process = require("node:process");
+
+exports.signUpOrLogin = async (req, res, next) => {
   const JWT_SECRET = process.env.JWT_SECRET;
   const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
 
