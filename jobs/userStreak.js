@@ -1,11 +1,10 @@
-'use strict';
+"use strict";
 
 const schedule = require("node-schedule");
 const pool = require("../db.js");
 
-
 // Runs at 11:59 pm every day
-schedule.scheduleJob('59 23 * * *', async function() {
+schedule.scheduleJob("59 23 * * *", async function () {
   try {
     const todayDate = new Date().toISOString().split("T")[0];
 
@@ -16,7 +15,7 @@ schedule.scheduleJob('59 23 * * *', async function() {
             WHERE last_entry_date < $1
             RETURNING user_id;
         `,
-      [todayDate]
+      [todayDate],
     );
 
     res.json({
