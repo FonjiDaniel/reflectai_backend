@@ -26,7 +26,7 @@ app.use("/api/v1/", authRoute);
 app.use("/api/v1/", libraryRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Server is running on port ${process.env.PORT");
+  res.send(`Server is running on port ${process.env.PORT}`);
 });
 
 io.use((socket, next) => {
