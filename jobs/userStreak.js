@@ -18,10 +18,7 @@ schedule.scheduleJob("59 23 * * *", async function () {
       [todayDate],
     );
 
-    res.json({
-      message: "Streaks reset successfully",
-      usersAffected: result.rowCount,
-    });
+    console.log( `resetted streaks for users: ${result.rows.map(row => row.user_id).join(" ") }`)
   } catch (error) {
     console.error("Error resetting streaks:", error);
   }
