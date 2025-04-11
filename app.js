@@ -84,6 +84,8 @@ io.on("connection", (socket) => {
   });
 });
 
+require("./jobs/userStreak.js");
+
 if (require.main === module) {
   const PORT = process.env.PORT;
   server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
