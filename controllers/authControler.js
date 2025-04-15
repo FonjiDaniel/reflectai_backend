@@ -3,6 +3,7 @@
 const jwt = require("jsonwebtoken");
 const { findUserByEmail, createUser } = require("../models/user.model");
 const process = require("node:process");
+const {sendWelcomeEmail} = require("../services/emailService.js");
 
 exports.signUpOrLogin = async (req, res, next) => {
   const JWT_SECRET = process.env.JWT_SECRET;
@@ -21,6 +22,8 @@ exports.signUpOrLogin = async (req, res, next) => {
 
     if (!user) {
       user = await createUser(name, email, clerkId);
+      await sendWelcomeEmail(email, name);
+
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
