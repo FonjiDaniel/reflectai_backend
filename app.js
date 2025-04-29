@@ -6,7 +6,7 @@ const dotenv = require("dotenv");
 const process = require("node:process");
 const cors = require("cors");
 const libraryController = require("./controllers/libraryController.js");
-const authRoute = require("./route/auth.routes.js");
+const authRoutes = require("./route/auth.routes.js");
 const libraryRoutes = require("./route/library.routes.js");
 
 dotenv.config();
@@ -16,13 +16,15 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    
   },
 });
 
 app.use(express.json());
 app.use(cors());
-app.use("/api/v1/", authRoute);
+app.use("/api/v1/", authRoutes);
 app.use("/api/v1/", libraryRoutes);
 
 app.get("/", (req, res) => {
